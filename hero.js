@@ -1,13 +1,14 @@
 /* 
-   The "Resourceful Assassin"
+   "Big"
 
    This hero will in order:
 
     1. Recover - Heal self if below 80 health
-    2. Greedy Heal - Heal self if right next to well
+    2. Greedy Heal - Heal self if not at full health and right next to well
     3. High-Five! - Heal damaged friend if at full health and right next to friend
-    4. Assassinate - If at full health, attack damaged enemies
-    5. Buddy Up - If at 80 or 90 health, go find a friend
+    4. Assasinate - Kill heavily damaged enemy if right next to it
+    5. Pick a Fight - If at full health, attack damaged enemies
+    6. Buddy Up - If at 80 or 90 health, go find a friend
 
 */
  var move = function(gameData, helpers) {
@@ -23,7 +24,7 @@
       //Get the path info object
       var pathInfoObject = helpers.findNearestObjectDirectionAndDistance(board, hero, function(heroTile) {
         //console.log(heroTile.health)
-        return heroTile.type === 'Hero' && heroTile.team === hero.team && heroTile.health < 100;
+        return heroTile.type === 'Hero' && heroTile.team === hero.team && heroTile.health < 90;
       });
 
       //Return the direction that needs to be taken to achieve the goal
@@ -43,6 +44,53 @@
      //Return the direction that needs to be taken to achieve the goal
      return pathInfoObject;
    };
+   
+   var findNearestWeakerEnemyTile = function(gameData) {
+     var hero = gameData.activeHero;
+     var board = gameData.board;
+
+     //Get the path info object
+     var pathInfoObject = helpers.findNearestObjectDirectionAndDistance(board, hero, function(enemyTile) {
+       return enemyTile.type === 'Hero' && enemyTile.team !== hero.team && enemyTile.health <= 40;
+     });
+
+     //Return the direction that needs to be taken to achieve the goal
+     //If no weaker enemy exists, will simply return undefined, which will
+     //be interpreted as "Stay" by the game object
+     return pathInfoObject;
+   };
+
+   var findNearestEnemyTile = function(gameData) {
+     var hero = gameData.activeHero;
+     var board = gameData.board;
+
+     //Get the path info object
+     var pathInfoObject = helpers.findNearestObjectDirectionAndDistance(board, hero, function(enemyTile) {
+       return enemyTile.type === 'Hero' && enemyTile.team !== hero.team;
+     });
+
+     //Return the direction that needs to be taken to achieve the goal
+     //If no weaker enemy exists, will simply return undefined, which will
+     //be interpreted as "Stay" by the game object
+     return pathInfoObject;
+   };
+
+
+   var findNearestEnemyTileFullHealth = function(gameData) {
+     var hero = gameData.activeHero;
+     var board = gameData.board;
+
+     //Get the path info object
+     var pathInfoObject = helpers.findNearestObjectDirectionAndDistance(board, hero, function(enemyTile) {
+       return enemyTile.type === 'Hero' && enemyTile.team !== hero.team && enemyTile.health === 100;
+     });
+
+     //Return the direction that needs to be taken to achieve the goal
+     //If no weaker enemy exists, will simply return undefined, which will
+     //be interpreted as "Stay" by the game object
+     return pathInfoObject;
+   };
+
 
    var finish = function () {
      //console.log("MOVING", direction)
@@ -91,20 +139,36 @@
      }
    }
 
+    //
+    // 4. Assasinate
+    // Kill heavily damaged enemy if right next to it
+    if (myHero.health >= 60) {
+
+      var tile = findNearestWeakerEnemyTile(gameData);
+
+      if (tile) {
+        //console.log(tile.distance);
+        if(tile.distance <= 2) {
+          direction = tile.direction;
+          return finish();
+        }
+      }
+    }
+
    //
-   // 4. Assassinate
+   // 5. Pick a fight
    // Attack nearest damaged enemies
-   // If no enemies are damaged, find a friend instead of picking a new fight
+   // If no enemies are damaged, go start a fight
    if (myHero.health === 100) {
      direction = helpers.findNearestWeakerEnemy(gameData);
      if (!direction) {
-       direction = helpers.findNearestTeamMember(gameData) || "North";
+       direction = findNearestEnemyTile(gameData).direction || "North";
      }
      return finish();
    }
 
    //
-   // 4. Buddy up
+   // 6. Buddy up
    // If health is 80 or 80, find a friend
    // If no friends are left, go to the closest well
    if (myHero.health <= 90) {
