@@ -7,10 +7,12 @@ function greedHeal (gameData, helpers) {
   var myHero = gameData.activeHero;
    if(myHero.health < 100) {
      var well = findNearestHealthWellTile(gameData);
+     var well = nearestTile(gameData, {
+       type: "HealthWell"
+     });
      if (well) {
        if (well.distance === 1) {
-         direction = well.direction;
-         return direction;
+         return well.direction;
        }
      }
    }
