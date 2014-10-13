@@ -1,5 +1,6 @@
 big
  .use('Recover', recover)
+ .use('Grave Robber', graveRobber)
  .use('Greedy Heal', greedHeal)
  .use('High Five!', highFive)
  .use('Assassinate', assassinate)
