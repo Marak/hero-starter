@@ -6,7 +6,6 @@ big.use = function (directive, fn) {
 };
 big.move = function (gameData, helpers){
   big.helpers = helpers;
-  // blow up the helpers variable into global scope, because we have no real module system for bots...lol
   var direction;
   Object.keys(big.directives).forEach(function(directive){
     if (direction) {
@@ -14,7 +13,8 @@ big.move = function (gameData, helpers){
     }
     direction = big.directives[directive](gameData, helpers);
   });
-  if(typeof direction === "undefined") {
+  if (typeof direction === "undefined") {
+    // if all else fails, go north my son
     direction = "North";
   }
   return direction;

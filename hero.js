@@ -15,7 +15,6 @@ big.use = function (directive, fn) {
 };
 big.move = function (gameData, helpers){
   big.helpers = helpers;
-  // blow up the helpers variable into global scope, because we have no real module system for bots...lol
   var direction;
   Object.keys(big.directives).forEach(function(directive){
     if (direction) {
@@ -23,7 +22,8 @@ big.move = function (gameData, helpers){
     }
     direction = big.directives[directive](gameData, helpers);
   });
-  if(typeof direction === "undefined") {
+  if (typeof direction === "undefined") {
+    // if all else fails, go north my son
     direction = "North";
   }
   return direction;
@@ -36,7 +36,7 @@ function assassinate (gameData, helpers) {
   var myHero = gameData.activeHero;
 
   if (myHero.health >= 60) {
-
+    // TODO: finishing blow logic / keep going if enemy is one hit away
     var tile = findNearestWeakerEnemyTile(gameData);
 
     if (tile) {
@@ -50,17 +50,41 @@ function assassinate (gameData, helpers) {
 }
 
 //
-// If health is 80 or 80, find a friend
-// If no friends are left, go to the closest well
+// TODO: If passing by a grave and not that damaged, take the grave
+//
+function avoidDanger (gameData, helpers) {
+  var direction;
+  var myHero = gameData.activeHero;
+  console.log(myZone(gameData))
+}
+//
+// If health is 90 or less, find a damaged friend
 //
 function buddyUp (gameData, helpers) {
   var direction;
   var myHero = gameData.activeHero;
-  //
+
   if (myHero.health <= 90) {
-    //console.log('FINDING FRIEND');
-    direction = helpers.findNearestTeamMember(gameData) || findNearestHealthWellTile(gameData).direction;
-    return direction;
+
+    var friend = nearestTile(gameData, {
+      type: "Hero",
+      team: myHero.team,
+      health: {
+        op: "LTE",
+        val: 90
+      }
+    });
+
+    var well = nearestTile(gameData, {
+      type: "HealthWell"
+    });
+
+    if (friend) {
+      return friend.direction;
+    } else {
+      return well.direction || "North";
+    }
+
   }
 }
 /*
@@ -95,6 +119,23 @@ function buddyUp (gameData, helpers) {
   
   */
 //
+// If passing by a grave and not that damaged, take the grave
+//
+function graveRobber (gameData, helpers) {
+  var direction;
+  var myHero = gameData.activeHero;
+  
+  var grave = nearestTile(gameData, {
+    subType: "Bones",
+  });
+  
+  if (grave) {
+    if (grave.distance === 1) {
+      return grave.direction;
+    }
+  }
+}
+//
 // If health is above 80 but below 100 and we are passing by a well,
 // move in the direction of that well to heal
 //
@@ -103,10 +144,12 @@ function greedHeal (gameData, helpers) {
   var myHero = gameData.activeHero;
    if(myHero.health < 100) {
      var well = findNearestHealthWellTile(gameData);
+     var well = nearestTile(gameData, {
+       type: "HealthWell"
+     });
      if (well) {
        if (well.distance === 1) {
-         direction = well.direction;
-         return direction;
+         return well.direction;
        }
      }
    }
@@ -116,14 +159,19 @@ function greedHeal (gameData, helpers) {
 // heal that friend
 //
 function highFive (gameData, helpers) {
-  var direction;
   var myHero = gameData.activeHero;
   if(myHero.health === 100) {
-    var friend = findNearestTeamMemberDamagedTile(gameData);
+    var friend = nearestTile(gameData, {
+      type: "Hero",
+      team: myHero.team,
+      health: {
+        op: "LTE",
+        val: 90
+      }
+    });
     if (friend) {
       if (friend.distance === 1) {
-        direction = friend.direction;
-        return direction;
+        return friend.direction;
       }
     }
   }
@@ -136,120 +184,152 @@ function highFive (gameData, helpers) {
 function pickFight (gameData, helpers) {
  var direction;
  var myHero = gameData.activeHero;
+
   if (myHero.health === 100) {
-    direction = helpers.findNearestWeakerEnemy(gameData);
-    if (!direction) {
-      direction = findNearestEnemyTile(gameData).direction || "North";
+    var damagedEnemy = nearestTile(gameData, {
+      type: "Hero",
+      team: {
+        op: "NEQ",
+        val: myHero.team
+      },
+      health: {
+        op: "LTE",
+        val: 40
+      }
+    });
+    if (!damagedEnemy) {
+      var enemy = nearestTile(gameData, {
+        type: "Hero",
+        team: {
+          op: "NEQ",
+          val: myHero.team
+        }
+      })
+      return enemy.direction;
+    } else {
+      return damagedEnemy.direction;
     }
-    return direction;
   }
 }
- 
-
 //
 // Heal if under 80 health
 //
 function recover (gameData, helpers) {
   var direction;
   var myHero = gameData.activeHero;
-  console.log('EXECUTING RECOVER DIRECTIVE')
   if (myHero.health < 80) {
     direction = helpers.findNearestHealthWell(gameData);
     return direction;
   }
 }
-var helpers;
 
- var tileQuery = function (gameDate, query) {
-    query = query || {};
-    
-    var board = gameData.board;
+//
+// If health is above 80 but below 100 and we are passing by a well,
+// move in the direction of that well to heal
+//
+function greedHeal (gameData, helpers) {
+  var direction;
+  var myHero = gameData.activeHero;
+   if(myHero.health < 100) {
+     var well = findNearestHealthWellTile(gameData);
+     var well = nearestTile(gameData, {
+       type: "HealthWell"
+     });
+     if (well) {
+       if (well.distance === 1) {
+         return well.direction;
+       }
+     }
+   }
+}
+//
+// If not at full health and a well is within 2 blocks, move towards it
+//
+function wellAffinity (gameData, helpers) {
+  var direction;
+  var myHero = gameData.activeHero;
+   var well = nearestTile(gameData, {
+     type: "HealthWell"
+   });
+   if (myHero.health < 100) {
+     if (well) {
+       if (well.distance === 2) {
+         return well.direction;
+       }
+     }
+   }
+}
+var myZone = function (gameData) {
+  
+  var myZone = "uuu\
+                uHu\
+                uuu";
+  console.log('ZONE', myZone)
+};
 
-    //Get the path info object
-    var pathInfoObject = big.helpers.findNearestObjectDirectionAndDistance(board, hero, function(tile) {
+var nearestTile = function (gameData, query) {
+  query = query || {};
 
-      var parameters = ['type', 'team', 'health', 'owner'];
-      var type = tile.type;
-      var team = tile.team;
-      var health = tile.health;
-      var owner = tile.owner;
+  var board = gameData.board;
+  var hero = gameData.activeHero;
 
-      var _query = [];
-      var commands = ['NEQ', 'EQ', 'GT', 'GTE', 'LT', 'LTE'];
-      
-      var found = true;
-      parameters.forEach(function(p){
-        if (typeof query[p] !== "undefined") {
-          if (found) {
-            var statement = query[p];
-            
-            if (typeof statement === "string") {
-              found = statement === eval(p);
-            } else {
-              var op = statement.op,
-                  val = statement.val;
-                  switch(str) {
-                    case 'NEQ':
-                      found = val !== eval(p);
-                    break;
-                    case 'EQ':
-                      found = val === eval(p);
-                    break;
-                    case 'GT':
-                      found = val > p;
-                    break;
-                    case 'GTE':
-                      found = val === p;
-                    break;
-                    case 'LT':
-                      found = val === p;
-                    break;
-                    case 'LTE':
-                      found = val === p;
-                    break;
-                    
-                  }
-              f
+  //Get the path info object
+  var pathInfoObject = big.helpers.findNearestObjectDirectionAndDistance(board, hero, function(tile) {
+    var found = true;
+    for (var p in query) {
+      var statement = query[p];
+      // check searching until found is false
+      // once found is false, that search parameter has failed
+      // if none of the search parameters fail, this tile matches the query
+      if (found) {
+        if (typeof statement === "string" || typeof statement === "number") {
+          found = statement === tile[p];
+          // console.log('PERFORMING string query', statement, p, tile[p], found)
+        } else {
+          var op = statement.op,
+              val = statement.val;
+            switch(op) {
+              case 'NEQ':
+                found = tile[p] !== val;
+              break;
+              case 'EQ':
+                found = tile[p] !== val;
+              break;
+              case 'GT':
+                found = tile[p] > val;
+              break;
+              case 'GTE':
+                found = tile[p] >= val ;
+              break;
+              case 'LT':
+                found = tile[p] < val;
+              break;
+              case 'LTE':
+                found = tile[p] <= val;
+              break;
             }
-            var str = statement.substr(0, 3);
-            var arr = str.join('');
-            
-            if(arr[2] === " ") {
-              arr.pop();
-            }
-            
-            str = arr.split("");
-
-            console.log(str);
-            
-            if (str.indexOf(commands) !== -1) {
-              
-            }
-            
-            found = (p === query[p]);
-          }
+            //console.log('PERFORMING obj query', statement, tile[p], found)
         }
-      });
+      }
+    }
+    return found;
+  });
+  return pathInfoObject;
+};
 
-      return found;
-    });
-    
-    
-  };
+var findNearestTeamMemberDamagedTile = function(gameData) {
+  var hero = gameData.activeHero;
+  var board = gameData.board;
 
-  var findNearestTeamMemberDamagedTile = function(gameData) {
-    var hero = gameData.activeHero;
-    var board = gameData.board;
+  //Get the path info object
+  var pathInfoObject = big.helpers.findNearestObjectDirectionAndDistance(board, hero, function(heroTile) {
+    //console.log(heroTile.health)
+    return heroTile.type === 'Hero' && heroTile.team === hero.team && heroTile.health < 90;
+  });
 
-    //Get the path info object
-    var pathInfoObject = big.helpers.findNearestObjectDirectionAndDistance(board, hero, function(heroTile) {
-      //console.log(heroTile.health)
-      return heroTile.type === 'Hero' && heroTile.team === hero.team && heroTile.health < 90;
-    });
-
-    //Return the direction that needs to be taken to achieve the goal
-    return pathInfoObject;
-  };
+  //Return the direction that needs to be taken to achieve the goal
+  return pathInfoObject;
+};
 
  // Returns the nearest health well or false, if there are no health wells
  var findNearestHealthWellTile = function(gameData) {
@@ -328,9 +408,11 @@ var helpers;
 
 big
  .use('Recover', recover)
+ .use('Grave Robber', graveRobber)
  .use('Greedy Heal', greedHeal)
  .use('High Five!', highFive)
  .use('Assassinate', assassinate)
+ .use('Well Affinity', wellAffinity)
  .use('Pick a Fight', pickFight)
  .use('Buddy Up', buddyUp);
  
