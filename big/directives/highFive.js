@@ -3,14 +3,19 @@
 // heal that friend
 //
 function highFive (gameData, helpers) {
-  var direction;
   var myHero = gameData.activeHero;
   if(myHero.health === 100) {
-    var friend = findNearestTeamMemberDamagedTile(gameData);
+    var friend = nearestTile(gameData, {
+      type: "Hero",
+      team: myHero.team,
+      health: {
+        op: "LTE",
+        val: 90
+      }
+    });
     if (friend) {
       if (friend.distance === 1) {
-        direction = friend.direction;
-        return direction;
+        return friend.direction;
       }
     }
   }
