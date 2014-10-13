@@ -1,14 +1,30 @@
 //
-// If health is 80 or 80, find a friend
-// If no friends are left, go to the closest well
+// If health is 90 or less, find a damaged friend
 //
 function buddyUp (gameData, helpers) {
   var direction;
   var myHero = gameData.activeHero;
-  //
+
   if (myHero.health <= 90) {
-    //console.log('FINDING FRIEND');
-    direction = helpers.findNearestTeamMember(gameData) || findNearestHealthWellTile(gameData).direction;
-    return direction;
+
+    var friend = nearestTile(gameData, {
+      type: "Hero",
+      team: myHero.team,
+      health: {
+        op: "LTE",
+        val: 90
+      }
+    });
+
+    var well = nearestTile(gameData, {
+      type: "HealthWell"
+    });
+
+    if (friend) {
+      return friend.direction;
+    } else {
+      return well.direction || "North";
+    }
+
   }
 }
