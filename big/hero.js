@@ -4,6 +4,7 @@ big
  .use('Greedy Heal', greedHeal)
  .use('High Five!', highFive)
  .use('Assassinate', assassinate)
+ .use('Well Affinity', wellAffinity)
  .use('Pick a Fight', pickFight)
  .use('Buddy Up', buddyUp);
  
