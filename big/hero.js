@@ -1,6 +1,6 @@
 big
  .use('Assassinate', assassinate)
- .use('Grave Robber', graveRobber)
+ .use('Greedy Grave Robber', greedyGraveRobber)
  .use('Stalk', stalk)
  .use('Greedy Heal', greedyHeal)
  .use('Avoid Danger', avoidDanger)
@@ -9,6 +9,7 @@ big
  .use('Recover', recover)
  .use('High Five!', highFive)
  .use('Well Affinity', wellAffinity)
+ .use('Grave Robber', pickFight)
  .use('Pick a Fight', pickFight)
  .use('Buddy Up', buddyUp);
  

@@ -295,6 +295,21 @@ function graveRobber (gameData, helpers) {
   });
   
   if (grave) {
+    return grave.direction;
+  }
+}
+//
+// If passing by a grave and not that damaged, take the grave
+//
+function greedyGraveRobber (gameData, helpers) {
+  var direction;
+  var myHero = gameData.activeHero;
+  
+  var grave = nearestTile(gameData, {
+    subType: "Bones",
+  });
+  
+  if (grave) {
     if (grave.distance === 1) {
       return grave.direction;
     }
@@ -893,7 +908,7 @@ var findNearestTeamMemberDamagedTile = function(gameData) {
 
 big
  .use('Assassinate', assassinate)
- .use('Grave Robber', graveRobber)
+ .use('Greedy Grave Robber', greedyGraveRobber)
  .use('Stalk', stalk)
  .use('Greedy Heal', greedyHeal)
  .use('Avoid Danger', avoidDanger)
@@ -902,6 +917,7 @@ big
  .use('Recover', recover)
  .use('High Five!', highFive)
  .use('Well Affinity', wellAffinity)
+ .use('Grave Robber', pickFight)
  .use('Pick a Fight', pickFight)
  .use('Buddy Up', buddyUp);
  

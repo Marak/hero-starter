@@ -1,7 +1,7 @@
 //
 // If passing by a grave and not that damaged, take the grave
 //
-function graveRobber (gameData, helpers) {
+function greedyGraveRobber (gameData, helpers) {
   var direction;
   var myHero = gameData.activeHero;
   
@@ -10,6 +10,8 @@ function graveRobber (gameData, helpers) {
   });
   
   if (grave) {
-    return grave.direction;
+    if (grave.distance === 1) {
+      return grave.direction;
+    }
   }
 }
