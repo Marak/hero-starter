@@ -452,10 +452,6 @@ function onlyDoubleTeamSafeMiner (gameData, helpers) {
       
     };
     
-    console.log('TOUCHING', touching(enemy, well))
-    console.log('TOUCHING', touching(enemy, mine))
-    console.log('TOUCHING', touching(enemy, buddy))
-    
     if (enemy.distance === 1 
       && touching(enemy, well)
       && touching(enemy, mine)) {
