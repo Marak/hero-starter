@@ -4,7 +4,7 @@
 //
 function highFive (gameData, helpers) {
   var myHero = gameData.activeHero;
-  if (myHero.health === 100) {
+  if (myHero.health >= 70) {
     var friend = nearestTile(gameData, {
       type: "Hero",
       team: myHero.team,

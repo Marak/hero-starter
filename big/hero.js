@@ -2,6 +2,7 @@ big
  .use('Assassinate', assassinate)
  .use('Grave Robber', graveRobber)
  .use('Stalk', stalk)
+ .use('Sometimes Random', sometimesRandom)
  .use('Greedy Heal', greedyHeal)
  .use('Avoid Danger', avoidDanger)
 // .use('Only Double Team Safe Miner', onlyDoubleTeamSafeMiner)

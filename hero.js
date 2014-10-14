@@ -39,8 +39,6 @@ function assassinate (gameData, helpers) {
 
   if (myHero.health >= 60) {
 
-    var tile = findNearestWeakerEnemyTile(gameData);
-
       var damagedEnemy = nearestTile(gameData, {
         type: "Hero",
         team: {
@@ -333,7 +331,7 @@ function greedyHeal (gameData, helpers) {
 //
 function highFive (gameData, helpers) {
   var myHero = gameData.activeHero;
-  if (myHero.health === 100) {
+  if (myHero.health >= 70) {
     var friend = nearestTile(gameData, {
       type: "Hero",
       team: myHero.team,
@@ -539,18 +537,41 @@ function pickFight (gameData, helpers) {
   }
 }
 //
-// Heal if under 80 health
+// Heal if under 60 health
 //
 function recover (gameData, helpers) {
   var direction;
   var myHero = gameData.activeHero;
-  if (myHero.health < 80) {
+  if (myHero.health <= 60) {
     direction = helpers.findNearestHealthWell(gameData);
     return direction;
   }
 }
 // if found enemy safeminer and touching well, we are deadlocked if a 2v1 doesnt' come along
 // better to just go find a damaged buddy
+//
+// Sometimes, make a random move ( to create entropy and potentially break from an unforseen dead-lock )
+//
+function sometimesRandom (gameData, helpers) {
+  var direction;
+  var myHero = gameData.activeHero;
+  
+  var rand = Math.floor(Math.random() * 100);
+  
+  var directions = ["North", "South", "East", "West"];
+  
+  var tile = nearestTile(gameData, {
+    "type": "Unoccupied"
+  });
+
+  // give a 10% chance to make a random move
+  if(rand > 90) {
+    var direction = Math.floor(Math.random() * 4);
+    console.log("MAKING RANDOM MOVE")
+    return directions[direction]
+  }
+  
+}
 
 //
 // Chases critically injured enemies that are 2 away
@@ -887,6 +908,7 @@ big
  .use('Assassinate', assassinate)
  .use('Grave Robber', graveRobber)
  .use('Stalk', stalk)
+ .use('Sometimes Random', sometimesRandom)
  .use('Greedy Heal', greedyHeal)
  .use('Avoid Danger', avoidDanger)
 // .use('Only Double Team Safe Miner', onlyDoubleTeamSafeMiner)

@@ -7,8 +7,6 @@ function assassinate (gameData, helpers) {
 
   if (myHero.health >= 60) {
 
-    var tile = findNearestWeakerEnemyTile(gameData);
-
       var damagedEnemy = nearestTile(gameData, {
         type: "Hero",
         team: {
