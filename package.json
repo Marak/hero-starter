@@ -17,6 +17,9 @@
     "url": "https://github.com/gjtrowbridge/hero-starter/issues"
   },
   "homepage": "https://github.com/gjtrowbridge/hero-starter",
+  "dependencies": {
+    "colors": "*"
+  },
   "devDependencies": {
     "chai": "^1.9.2",
     "mocha": "^1.21.4",

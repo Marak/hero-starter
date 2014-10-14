@@ -18,6 +18,8 @@ To run:
 
 */
 
+var colors = require('colors')
+
 //Get the helper file and the Game logic
 var helpers = require('./helpers.js');
 var Game = require('./game_logic/Game.js');
@@ -26,27 +28,86 @@ var Game = require('./game_logic/Game.js');
 var heroMoveFunction = require('./hero.js');
 
 //The move function ("brain") the practice enemy will use
+/*
 var enemyMoveFunction = function(gameData, helpers) {
   //Move in a random direction
   var choices = ['North', 'South', 'East', 'West'];
   return choices[Math.floor(Math.random()*4)];
 }
+*/
 
-//Makes a new game with a 5x5 board
-var game = new Game(5);
+/*
+*/
 
-//Add a health well in the middle of the board
-game.addHealthWell(2,2);
+var brains = {};
 
-//Add diamond mines on either side of the health well
-game.addDiamondMine(2,1);
-game.addDiamondMine(2,3);
+var fs = require('fs');
 
-//Add your hero in the top left corner of the map (team 0)
-game.addHero(0, 0, 'MyHero', 0);
+var files = fs.readdirSync(__dirname + '/brains');
 
-//Add an enemy hero in the bottom left corner of the map (team 1)
-game.addHero(4, 4, 'Enemy', 1);
+files.forEach(function(file){
+  brains[file.replace('.js', '')] = require('./brains/' + file)
+});
+//console.log(brains)
+
+//var enemyMoveFunction = require('./safeMiner');
+
+//brains["Big"] = heroMoveFunction;
+
+
+
+var rows = [
+             ['☺','U','W','U','B','U','U','U'],
+             ['U','U','U','U','U','U','U','U'],
+             ['U','D','U','U','U','U','E','D'],
+             ['E','U','U','D','W','U','U','B'],
+             ['U','U','B','U','U','U','E','E'],
+             ['W','U','E','U','U','U','E','U'],
+             ['U','B','E','U','W','D','U','U'],
+             ['U','U','E','B','U','B','B','U']
+           ];
+
+var enemyMoveFunction = brains[Object.keys(brains)[0]];
+
+
+//Makes a new game with a 8x8 board
+var game = new Game(8);
+
+
+rows.forEach(function(row, _x){
+  row.forEach(function(cell, _y){
+//    console.log(x,y)
+    
+    //console.log(rows[x][0])
+//    console.log(x, y, rows[x][y]);
+    
+    var cell = rows[_x][_y];
+    var rand = Math.floor(Math.random() * Object.keys(brains).length);
+    var ai = Object.keys(brains)[rand];
+    switch(cell) {
+      case '☺':
+        game.addHero(_x, _y, 'MyHero', 0);
+      break;
+      case 'W':
+        game.addHealthWell(_x, _y);
+      break;
+      case 'D':
+        game.addDiamondMine(_x, _y);
+      break;
+      case 'E':
+        game.addHero(_x, _y, ai, 1);
+      break;
+      case 'B':
+        game.addHero(_x, _y, ai, 0);
+      break;
+      default:
+        // do nothing
+      break;
+    }
+    
+  });
+});
+
 
 console.log('About to start the game!  Here is what the board looks like:');
 
@@ -55,25 +116,94 @@ console.log('About to start the game!  Here is what the board looks like:');
 //game, the game object will not have any functions on it)
 game.board.inspect();
 
-//Play a very short practice game
-var turnsToPlay = 15;
+var teams;
 
-for (var i=0; i<turnsToPlay; i++) {
+function tick () {
+  
+  var alive = [0, 0];
+  teams = [[],[]];
+  game.heroes.forEach(function(_hero){
+    teams[_hero.team].push({ team: _hero.team, name: _hero.name });
+    if(_hero.dead === false) {
+      alive[_hero.team]++;
+    }
+  });
+  
+  if(turnsToPlay <= 0) {
+    return end();
+  }
+  turnsToPlay = turnsToPlay - 1;
+  i++
   var hero = game.activeHero;
   var direction;
   if (hero.name === 'MyHero') {
-
+    //console.log(hero)
+    
+    if(hero.dead) {
+      //console.log("DEAD")
+      //process.exit();
+    }
     //Ask your hero brain which way it wants to move
     direction = heroMoveFunction(game, helpers);
   } else {
-    direction = enemyMoveFunction(game, helpers);
+    direction = brains[hero.name](game, helpers);
   }
-  console.log('-----');
-  console.log('Turn ' + i + ':');
-  console.log('-----');
-  console.log(hero.name + ' tried to move ' + direction);
-  console.log(hero.name + ' owns ' + hero.mineCount + ' diamond mines')
-  console.log(hero.name + ' has ' + hero.health + ' health')
+  
+
   game.handleHeroTurn(direction);
-  game.board.inspect();
+  
+  var enemy = false, heros = false;
+  game.heroes.forEach(function(hero){
+    if(hero.team === 1 && hero.dead === false) {
+      enemy = true;
+    }
+    
+    if(hero.team === 0 && hero.dead === false) {
+      heros = true;
+    }
+    
+  });
+  
+  if (enemy === false) {
+    end();
+  }
+  if (heros === false) {
+    end();
+  }
+  
+//  if (hero.name === "MyHero") {
+      console.log('-----');
+      console.log('Turn ' + i + ':');
+      console.log('Players ' + alive[0] + ' - ' + alive[1]);
+      if (i === 1) {
+        console.log(teams)
+      }
+      console.log('-----');
+      game.board.inspect();
+      
+    //  console.log(hero.name + ' tried to move ' + direction);
+    //  console.log(hero.name + ' owns ' + hero.mineCount + ' diamond mines')
+    //  console.log(hero.name + ' has ' + hero.health + ' health')
+  tick();
+  
 }
+
+function end(gameData){
+  console.log(teams)
+  console.log('Kills:' + game.activeHero.heroesKilled.length);
+  console.log('Graves:' + game.activeHero.gravesRobbed);
+  if(game.winningTeam === 0) {
+    console.log("WON!!".green)
+  } else {
+    console.log("Lost...".red)
+  }
+//  console.log(game.winningTeam)
+  
+  process.exit();
+  
+};
+
+//Play a very short practice game
+var turnsToPlay = 1200, i = 0;
+
+tick();

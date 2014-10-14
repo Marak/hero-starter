@@ -1,3 +1,5 @@
+var colors = require('colors')
+
 var Hero = function(distanceFromTop, distanceFromLeft, name, team) {
   this.id = undefined;
 
@@ -109,11 +111,30 @@ Hero.prototype.loseMine = function(diamondMine) {
 
 
 Hero.prototype.getCode = function() {
+  
   var idStr = this.id.toString();
   if (idStr.length === 1) {
     idStr = '0' + idStr;
   }
-  return 'H' + idStr;
+  var str;
+  if(this.health === 100) {
+    str = 99;
+  } else {
+    str = this.health;
+  }
+  
+  
+  
+//  console.log(this)
+  if(this.team === 0) {
+    if(idStr === "00") {
+      return ('H' + str).magenta;
+    } else {
+      return ('H' + str).green;
+    }
+  } else {
+    return ('H' + str).red;
+  }
 };
 
 module.exports = Hero;

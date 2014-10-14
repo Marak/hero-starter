@@ -1,3 +1,5 @@
+var colors = require('colors')
+
 var DiamondMine = function(distanceFromTop, distanceFromLeft) {
   this.id = undefined;
 
@@ -15,7 +17,7 @@ DiamondMine.prototype.getCode = function() {
   if (idStr.length === 1) {
     idStr = '0' + idStr;
   }
-  return 'D' + idStr;
+  return ('D' + idStr).blue;
 };
 
 DiamondMine.prototype.updateOwner = function(hero) {

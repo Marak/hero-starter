@@ -1,3 +1,5 @@
+var colors = require('colors');
+
 var Unoccupied = function(distanceFromTop, distanceFromLeft) {
   this.type = "Unoccupied";
   this.subType = "Unoccupied";
@@ -6,7 +8,13 @@ var Unoccupied = function(distanceFromTop, distanceFromLeft) {
 };
 
 Unoccupied.prototype.getCode = function() {
-  return '   ';
+  
+  if(this.subType === "Bones") {
+    return 'BBB'.grey;
+  } else {
+    return '   ';
+  }
+  
 };
 
 module.exports = Unoccupied;

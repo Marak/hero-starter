@@ -1,3 +1,5 @@
+var colors = require('colors')
+
 var HealthWell = function(distanceFromTop, distanceFromLeft) {
   this.distanceFromTop = distanceFromTop;
   this.distanceFromLeft = distanceFromLeft;
@@ -8,7 +10,7 @@ var HealthWell = function(distanceFromTop, distanceFromLeft) {
 };
 
 HealthWell.prototype.getCode = function() {
-  return 'WWW';
+  return 'WWW'.yellow;
 };
 
 module.exports = HealthWell;
