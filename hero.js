@@ -583,10 +583,6 @@ function stalk (gameData, helpers) {
     team: {
       op: "NEQ",
       val: myHero.team
-    },
-    health: {
-      op: "LTE",
-      val: 40 
     }
   });
 
