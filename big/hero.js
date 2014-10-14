@@ -1,9 +1,12 @@
 big
- .use('Recover', recover)
- .use('Grave Robber', graveRobber)
- .use('Greedy Heal', greedHeal)
- .use('High Five!', highFive)
  .use('Assassinate', assassinate)
+ .use('Grave Robber', graveRobber)
+ .use('Stalk', stalk)
+ .use('Greedy Heal', greedyHeal)
+ .use('Avoid Danger', avoidDanger)
+// .use('Only Double Team Safe Miner', onlyDoubleTeamSafeMiner)
+ .use('Recover', recover)
+ .use('High Five!', highFive)
  .use('Well Affinity', wellAffinity)
  .use('Pick a Fight', pickFight)
  .use('Buddy Up', buddyUp);

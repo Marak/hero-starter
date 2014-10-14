@@ -8,7 +8,6 @@ helpers.validCoordinates = function(board, distanceFromTop, distanceFromLeft) {
 
 // Returns the tile [direction] (North, South, East, or West) of the given X/Y coordinate
 helpers.getTileNearby = function(board, distanceFromTop, distanceFromLeft, direction) {
-
   // These are the X/Y coordinates
   var fromTopNew = distanceFromTop;
   var fromLeftNew = distanceFromLeft;
@@ -136,7 +135,6 @@ helpers.findNearestObjectDirectionAndDistance = function(board, fromTile, tileCa
       }
     }
   }
-
   // If we are blocked and there is no way to get where we want to go, return false
   return false;
 };

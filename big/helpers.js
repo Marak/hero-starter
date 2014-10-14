@@ -1,3 +1,122 @@
+var myZone = function (gameData) {
+  
+  var board = gameData.board;
+  var hero = gameData.activeHero;
+  
+  var x = hero.distanceFromLeft,
+      y = hero.distanceFromTop;
+
+  var topLeft,
+      top,
+      topRight,
+      left,
+      right,
+      bottomLeft,
+      bottom,
+      bottomRight;
+  
+  
+  board.tiles.forEach(function(_tile){
+    _tile.forEach(function(tile){
+      var tileX = tile.distanceFromLeft,
+          tileY = tile.distanceFromTop
+
+      if (tileX === x - 1 && tileY === y - 1) {
+        topLeft = tile;
+      }
+
+      if (tileX === x && tileY === y - 1) {
+        top = tile;
+      }
+
+      if (tileX === x + 1 && tileY === y - 1) {
+        topRight = tile;
+      }
+
+      if (tileY === y && tileX === x - 1) {
+        left = tile;
+      } 
+      //console.log('tile', tileX, tileY)
+      //console.log('me', x, y)
+      //console.log('__')
+
+      if (tileX === x + 1 && tileY === y) {
+        right = tile;
+      }
+
+      if (tileX === x - 1 && tileY === y + 1) {
+        bottomLeft = tile;
+      }
+
+      if (tileX === x && tileY === y + 1) {
+        bottom = tile;
+      }
+
+      if (tileX === x + 1 && tileY === y + 1) {
+        bottomRight = tile;
+      }      
+    });
+
+
+
+  });
+  
+  function assignType (tile) {
+    var type;
+    if(typeof tile === "object") {
+      
+      if(tile.type === "Unoccupied") {
+        return "U";
+      }
+      if(tile.type === "DiamondMine") {
+        return "D";
+      }
+      if(tile.type === "HealthWell") {
+        return "H";
+      }
+
+      
+      if (tile.type === "Hero") {
+        if (tile.team !== hero.team) {
+          return "B";
+        } else {
+          return "E";
+        }
+      }
+      
+      type = tile.subType || tile.type;
+//      console.log('ASS', type)
+      
+    } else {
+      type = "N";
+    }
+    return type;
+  }
+  
+  
+  topLeft = assignType(topLeft)
+  top = assignType(top)
+  topRight = assignType(topRight)
+  left = assignType(left)
+  right = assignType(right)
+  bottomLeft = assignType(bottomLeft)
+  bottom = assignType(bottom)
+  bottomRight = assignType(bottomRight)
+  
+  var arr = [];
+  arr.push(topLeft, top, topRight);
+  arr.push(left, '☺', right);
+  arr.push(bottomLeft,  bottom, bottomRight);
+  
+  return arr;
+  // get all tiles in my zone
+//  var topLeft = gameData.board.tiles
+  
+  
+  //console.log('ZONE', zone)
+  //console.log(gameData)
+};
+
 var nearestTile = function (gameData, query) {
   query = query || {};
 
@@ -6,6 +125,7 @@ var nearestTile = function (gameData, query) {
 
   //Get the path info object
   var pathInfoObject = big.helpers.findNearestObjectDirectionAndDistance(board, hero, function(tile) {
+    
     var found = true;
     for (var p in query) {
       var statement = query[p];
@@ -24,7 +144,7 @@ var nearestTile = function (gameData, query) {
                 found = tile[p] !== val;
               break;
               case 'EQ':
-                found = tile[p] !== val;
+                found = tile[p] === val;
               break;
               case 'GT':
                 found = tile[p] > val;
