@@ -18,8 +18,6 @@ big.move = function (gameData, helpers){
   var direction;
   Object.keys(big.directives).forEach(function(directive){
     if (direction) {
-//      console.log('Executing', directive, direction)
-//      console.log('_____')
       return direction;
     }
     direction = big.directives[directive](gameData, helpers);
@@ -906,8 +904,8 @@ big
  .use('Grave Robber', graveRobber)
  .use('Stalk', stalk)
  .use('Greedy Heal', greedyHeal)
- .use('Sometimes Random', sometimesRandom)
  .use('Avoid Danger', avoidDanger)
+ .use('Sometimes Random', sometimesRandom)
 // .use('Only Double Team Safe Miner', onlyDoubleTeamSafeMiner)
  .use('Recover', recover)
  .use('High Five!', highFive)
