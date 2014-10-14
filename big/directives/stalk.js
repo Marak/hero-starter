@@ -1,12 +1,12 @@
 //
-// Kill heavily damaged enemy if right next to it
+// Chases critically injured enemies that are 2 away
 //
-function assassinate (gameData, helpers) {
+function stalk (gameData, helpers) {
   var direction;
   var myHero = gameData.activeHero;
 
-  if (myHero.health >= 60) {
-
+  if (myHero.health >= 80) {
+    // TODO: finishing blow logic / keep going if enemy is one hit away
     var tile = findNearestWeakerEnemyTile(gameData);
 
       var damagedEnemy = nearestTile(gameData, {
@@ -17,13 +17,13 @@ function assassinate (gameData, helpers) {
         },
         health: {
           op: "LTE",
-          val: 20 
+          val: 40 
         }
       });
 
     if (damagedEnemy) {
       //console.log(tile.distance);
-      if(damagedEnemy.distance <= 1) {
+      if(damagedEnemy.distance <= 2) {
         direction = damagedEnemy.direction;
         return direction;
       }
