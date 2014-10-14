@@ -227,7 +227,7 @@ function avoidDanger (gameData, helpers) {
   
 }
 //
-// If health is 90 or less, find a damaged friend
+// If health is 90 or less, find a friend
 //
 function buddyUp (gameData, helpers) {
   var direction;
@@ -237,11 +237,7 @@ function buddyUp (gameData, helpers) {
 
     var friend = nearestTile(gameData, {
       type: "Hero",
-      team: myHero.team,
-      health: {
-        op: "LTE",
-        val: 90
-      }
+      team: myHero.team
     });
 
     var well = nearestTile(gameData, {
