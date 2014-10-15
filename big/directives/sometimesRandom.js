@@ -16,7 +16,7 @@ function sometimesRandom (gameData, helpers) {
   // give a 10% chance to make a random move
   if(rand > 90) {
     var direction = Math.floor(Math.random() * 4);
-    console.log("MAKING RANDOM MOVE")
+    //console.log("MAKING RANDOM MOVE")
     return directions[direction]
   }
   

@@ -139,24 +139,33 @@ var nearestTile = function (gameData, query) {
         } else {
           var op = statement.op,
               val = statement.val;
+
+            var parts = p.split('.');
+            var tileValue;
+            if (parts.length > 1) {
+              tileValue = tile[parts[0]][parts[1]]
+            } else {
+              tileValue = tile[parts[0]];
+            }
+
             switch(op) {
               case 'NEQ':
-                found = tile[p] !== val;
+                found = tileValue !== val;
               break;
               case 'EQ':
-                found = tile[p] === val;
+                found = tileValue === val;
               break;
               case 'GT':
-                found = tile[p] > val;
+                found = tileValue > val;
               break;
               case 'GTE':
-                found = tile[p] >= val ;
+                found = tileValue >= val ;
               break;
               case 'LT':
-                found = tile[p] < val;
+                found = tileValue < val;
               break;
               case 'LTE':
-                found = tile[p] <= val;
+                found = tileValue <= val;
               break;
             }
             //console.log('PERFORMING obj query', statement, tile[p], found)
@@ -255,4 +264,19 @@ var findNearestTeamMemberDamagedTile = function(gameData) {
    //If no weaker enemy exists, will simply return undefined, which will
    //be interpreted as "Stay" by the game object
    return pathInfoObject;
+ };
+
+ helpers.findNearestMuchWeakerEnemy = function(gameData) {
+   var hero = gameData.activeHero;
+   var board = gameData.board;
+
+   //Get the path info object
+   var pathInfoObject = helpers.findNearestObjectDirectionAndDistance(board, hero, function(enemyTile) {
+     return enemyTile.type === 'Hero' && enemyTile.team !== hero.team && (hero.health - enemyTile.health) > 20;
+   });
+
+   //Return the direction that needs to be taken to achieve the goal
+   //If no weaker enemy exists, will simply return undefined, which will
+   //be interpreted as "Stay" by the game object
+   return pathInfoObject.direction;
  };

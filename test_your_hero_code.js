@@ -58,63 +58,25 @@ files.forEach(function(file){
 
 var rows = [
              ['☺','U','W','U','B','U','U','U'],
-             ['U','U','U','U','U','U','U','U'],
-             ['U','D','U','U','U','U','E','D'],
+             ['U','U','U','U','U','E','U','U'],
+             ['U','D','E','U','U','D','U','U'],
              ['E','U','U','D','W','U','U','B'],
              ['U','U','B','U','U','U','E','E'],
-             ['W','U','E','U','U','U','E','U'],
+             ['W','U','E','B','U','U','E','U'],
              ['U','B','E','U','W','D','U','U'],
-             ['U','U','E','B','U','B','B','U']
+             ['U','U','D','B','U','U','B','U']
            ];
 
 var enemyMoveFunction = brains[Object.keys(brains)[0]];
 
 
-//Makes a new game with a 8x8 board
-var game = new Game(8);
 
 
-rows.forEach(function(row, _x){
-  row.forEach(function(cell, _y){
-//    console.log(x,y)
-    
-    //console.log(rows[x][0])
-//    console.log(x, y, rows[x][y]);
-    
-    var cell = rows[_x][_y];
-    var rand = Math.floor(Math.random() * Object.keys(brains).length);
-    var ai = Object.keys(brains)[rand];
-    switch(cell) {
-      case '☺':
-        game.addHero(_x, _y, 'MyHero', 0);
-      break;
-      case 'W':
-        game.addHealthWell(_x, _y);
-      break;
-      case 'D':
-        game.addDiamondMine(_x, _y);
-      break;
-      case 'E':
-        game.addHero(_x, _y, ai, 1);
-      break;
-      case 'B':
-        game.addHero(_x, _y, ai, 0);
-      break;
-      default:
-        // do nothing
-      break;
-    }
-    
-  });
-});
-
-
-console.log('About to start the game!  Here is what the board looks like:');
+//console.log('About to start the game!  Here is what the board looks like:');
 
 //You can run game.board.inspect() in this test code at any time
 //to log out the current state of the board (keep in mind that in the actual
 //game, the game object will not have any functions on it)
-game.board.inspect();
 
 var teams;
 
@@ -172,14 +134,14 @@ function tick () {
   }
   
 //  if (hero.name === "MyHero") {
-      console.log('-----');
-      console.log('Turn ' + i + ':');
-      console.log('Players ' + alive[0] + ' - ' + alive[1]);
+      //console.log('-----');
+      //console.log('Turn ' + i + ':');
+      //console.log('Players ' + alive[0] + ' - ' + alive[1]);
       if (i === 1) {
-        console.log(teams)
+        //console.log(teams)
       }
-      console.log('-----');
-      game.board.inspect();
+      //console.log('-----');
+      //game.board.inspect();
       
     //  console.log(hero.name + ' tried to move ' + direction);
     //  console.log(hero.name + ' owns ' + hero.mineCount + ' diamond mines')
@@ -188,22 +150,106 @@ function tick () {
   
 }
 
-function end(gameData){
-  console.log(teams)
-  console.log('Kills:' + game.activeHero.heroesKilled.length);
-  console.log('Graves:' + game.activeHero.gravesRobbed);
+function end(){
+  //console.log(teams)
+  //console.log('Kills:' + game.activeHero.heroesKilled.length);
+  //console.log('Graves:' + game.activeHero.gravesRobbed);
   if(game.winningTeam === 0) {
-    console.log("WON!!".green)
+    results.wins++;
+    //console.log("WON!!".green)
   } else {
-    console.log("Lost...".red)
+    results.losses++;
+    //console.log("Lost...".red);
   }
 //  console.log(game.winningTeam)
+  //console.log("Turns: " + i)
+  if (!game.heroes[0].dead) {
+    results.survived++;
+  }
+  results.kills += game.heroes[0].heroesKilled.length;
+  //console.log(game.heroes[0].heroesKilled.length)
+  //console.log("Survived:", !game.heroes[0].dead)
+
+  runGame();
   
-  process.exit();
+  // process.exit();
   
 };
 
-//Play a very short practice game
-var turnsToPlay = 1200, i = 0;
+var results = {
+  wins: 0,
+  losses: 0,
+  survived: 0,
+  kills: 0
+};
 
-tick();
+
+var times = 10;
+var _times = 10;
+var turnsToPlay = 0, i =0;
+var runGame = function () {
+  turnsToPlay = 1200, i = 0;
+
+  game = new Game(8);
+
+  rows.forEach(function(row, _x){
+    row.forEach(function(cell, _y){
+  //    console.log(x,y)
+
+      //console.log(rows[x][0])
+  //    console.log(x, y, rows[x][y]);
+
+      var cell = rows[_x][_y];
+      var rand = Math.floor(Math.random() * Object.keys(brains).length);
+      var ai = Object.keys(brains)[rand];
+      switch(cell) {
+        case '☺':
+          game.addHero(_x, _y, 'MyHero', 0);
+        break;
+        case 'W':
+          game.addHealthWell(_x, _y);
+        break;
+        case 'D':
+          game.addDiamondMine(_x, _y);
+        break;
+        case 'E':
+          game.addHero(_x, _y, ai, 1);
+        break;
+        case 'B':
+          game.addHero(_x, _y, ai, 0);
+        break;
+        default:
+          // do nothing
+        break;
+      }
+
+    });
+  });
+  //game.board.inspect();
+  
+  if(times > 0) {
+    times--;
+  }
+  else {
+    
+    // crunch results
+    
+    var winLoss = (results.wins / _times) * 100;
+    var surviveRate = (results.survived / _times) * 100;
+    
+    console.log("Win", winLoss + "%", "Survived", surviveRate + "%", "Kills", results.kills)
+    
+    //console.log(results);
+    process.exit();
+  }
+  //Play a very short practice game
+  tick();  
+}
+
+//Makes a new game with a 8x8 board
+var game;
+
+
+
+
+runGame();

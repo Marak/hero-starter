@@ -70,10 +70,10 @@ function avoidDanger (gameData, helpers) {
 
   var zone = myZone(gameData);
   
-  console.log("----- MYZONE -----")
-  console.log(zone[0], '|', zone[1], '|', zone[2]);
-  console.log(zone[3], '|', zone[4], '|', zone[5]);
-  console.log(zone[6], '|', zone[7], '|', zone[8]);
+  // console.log("----- MYZONE -----")
+  // console.log(zone[0], '|', zone[1], '|', zone[2]);
+  // console.log(zone[3], '|', zone[4], '|', zone[5]);
+  // console.log(zone[6], '|', zone[7], '|', zone[8]);
   
   var NW = zone[0], 
       N = zone[1],
@@ -227,13 +227,35 @@ function avoidDanger (gameData, helpers) {
   
 }
 //
+// If under 80 health and well is farther away then buddy, move to buddy
+//
+function tooFar (gameData, helpers) {
+  var direction;
+  var hero = gameData.activeHero;
+  
+  if (myHero.health < 80) {
+    
+    var buddy = nearestTile(gameData,{
+      type: 'Hero',
+      team: hero.team
+    });
+
+    var well = nearestTile(gameData,{
+      type: 'HealthWell'
+    });
+    
+    direction = helpers.findNearestHealthWell(gameData);
+    return direction;
+  }
+}
+//
 // If health is 90 or less, find a friend
 //
 function buddyUp (gameData, helpers) {
   var direction;
   var myHero = gameData.activeHero;
 
-  if (myHero.health <= 90) {
+  if (myHero.health <= 80) {
 
     var friend = nearestTile(gameData, {
       type: "Hero",
@@ -408,7 +430,7 @@ function onlyDoubleTeamSafeMiner (gameData, helpers) {
   });
   
   if (enemy) {
-    console.log(enemy, well)
+    //console.log(enemy, well)
     /*
     
       W E D 
@@ -455,13 +477,13 @@ function onlyDoubleTeamSafeMiner (gameData, helpers) {
     if (enemy.distance === 1 
       && touching(enemy, well)
       && touching(enemy, mine)) {
-        console.log('FOUND SAFE MINER')
+        //console.log('FOUND SAFE MINER')
       // we found a safe miner
       if (buddy) {
-        console.log('where is my buddy', buddy, hero)
+        //console.log('where is my buddy', buddy, hero)
         if (touching(enemy, buddy)) {
             // attempt to attack ( double team ) the safe miner
-            console.log("DOUBLE TEAM")
+            //console.log("DOUBLE TEAM")
             return enemy.direction;
         } else {
            // can't kill safeminer, go find a friend instead
@@ -542,7 +564,7 @@ function pickFight (gameData, helpers) {
   }
 }
 //
-// Heal if under 60 health
+// Heal if considerably damaged
 //
 function recover (gameData, helpers) {
   var direction;
@@ -552,6 +574,38 @@ function recover (gameData, helpers) {
     return direction;
   }
 }
+//
+// If next to a diamond mine and an enemy is not that close, take the diamond mine
+//
+function safeMineGrab (gameData, helpers) {
+  var direction;
+  var myHero = gameData.activeHero;
+
+   var mine = nearestTile(gameData, {
+     type: "DiamondMine",
+     "owner.team": {
+       op: "NEQ",
+       val: myHero.team
+     }
+   });
+
+   var enemy = nearestTile(gameData, {
+     type: "Hero",
+     team: {
+       op: "NEQ",
+       val: myHero.team
+     }
+   })
+
+   if (myHero.health === 100) {
+     if (mine && mine.distance === 1) {
+       if (enemy && enemy.distance > 3) {
+         return mine.direction;
+         return well.direction;
+       }
+     }
+   }
+}
 // if found enemy safeminer and touching well, we are deadlocked if a 2v1 doesnt' come along
 // better to just go find a damaged buddy
 //
@@ -560,7 +614,6 @@ function recover (gameData, helpers) {
 function sometimesRandom (gameData, helpers) {
   var direction;
   var myHero = gameData.activeHero;
-  
   var rand = Math.floor(Math.random() * 100);
   
   var directions = ["North", "South", "East", "West"];
@@ -568,11 +621,11 @@ function sometimesRandom (gameData, helpers) {
   var tile = nearestTile(gameData, {
     "type": "Unoccupied"
   });
-
+  // TODO: only move to open space
   // give a 10% chance to make a random move
   if(rand > 90) {
     var direction = Math.floor(Math.random() * 4);
-    console.log("MAKING RANDOM MOVE")
+    //console.log("MAKING RANDOM MOVE")
     return directions[direction]
   }
   
@@ -784,24 +837,33 @@ var nearestTile = function (gameData, query) {
         } else {
           var op = statement.op,
               val = statement.val;
+
+            var parts = p.split('.');
+            var tileValue;
+            if (parts.length > 1) {
+              tileValue = tile[parts[0]][parts[1]]
+            } else {
+              tileValue = tile[parts[0]];
+            }
+
             switch(op) {
               case 'NEQ':
-                found = tile[p] !== val;
+                found = tileValue !== val;
               break;
               case 'EQ':
-                found = tile[p] === val;
+                found = tileValue === val;
               break;
               case 'GT':
-                found = tile[p] > val;
+                found = tileValue > val;
               break;
               case 'GTE':
-                found = tile[p] >= val ;
+                found = tileValue >= val ;
               break;
               case 'LT':
-                found = tile[p] < val;
+                found = tileValue < val;
               break;
               case 'LTE':
-                found = tile[p] <= val;
+                found = tileValue <= val;
               break;
             }
             //console.log('PERFORMING obj query', statement, tile[p], found)
@@ -904,19 +966,19 @@ var findNearestTeamMemberDamagedTile = function(gameData) {
 
 big
  .use('Assassinate', assassinate)
- .use('Greedy Grave Robber', greedyGraveRobber)
  .use('Stalk', stalk)
  .use('Greedy Heal', greedyHeal)
  .use('Avoid Danger', avoidDanger)
+ .use('Greedy Grave Robber', greedyGraveRobber)
  .use('Sometimes Random', sometimesRandom)
-// .use('Only Double Team Safe Miner', onlyDoubleTeamSafeMiner)
  .use('Recover', recover)
  .use('High Five!', highFive)
+// .use('Safe Mine Grab', safeMineGrab)
  .use('Well Affinity', wellAffinity)
  .use('Grave Robber', pickFight)
  .use('Pick a Fight', pickFight)
  .use('Buddy Up', buddyUp);
- 
+
 var move = function (gameData, helpers) {
  return big.move(gameData, helpers);
 }
